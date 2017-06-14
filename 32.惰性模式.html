@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>32.惰性模式</title>
+</head>
+<body>
+<p>
+	对于一些只需要执行一次的分支判断，采用惰性模式，重定义方法，避免每次调用都重复执行分支判断。
+	一般用于解决浏览器兼容（功能验证）分支代码的重写。
+</p>
+</body>
+
+<script type="text/javascript">
+
+//以添加监听事件为例
+
+var A = {};
+
+
+//页面加载时触发
+A.on = (function(dom,type,fn){
+	if(document.addEventListener){
+		return function(dom,type,fn){
+			dom.addEventListener(type,fn,false);
+		}
+	}else if(document.attachEvent){
+		return function(dom,type,fn){
+			dom.attachEvent('on'+type,fn);
+		}
+	}else {
+		return function(dom,type,fn){
+			dom['on'+type] = fn;
+		}
+	}
+
+})();
+
+
+//第一次执行时触发
+A.on = function(dom,type,fn){
+	if(document.addEventListener){
+		A.on = function(dom,type,fn){
+			dom.addEventListener(type,fn,false);
+		}
+	}else if(document.attachEvent){
+		A.on = function(dom,type,fn){
+			dom.attachEvent('on'+type,fn)
+		}
+	}else {
+		A.on = function(dom,type,fn){
+			dom['on'+type] = fn;
+		}
+	}
+}
+
+
+//同样的方式，可以利用在ajax对象，或其他设计浏览器兼容性的方法。
+
+
+</script>
+
+</html>

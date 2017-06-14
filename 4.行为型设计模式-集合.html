@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>4.行为型设计模式-集合</title>
+</head>
+<body>
+
+<h2>行为型设计模式：用于不同对象之间职责划分或算法抽象，不仅仅涉及类和对象，还涉及类或对象之间的交流模式并加以实现</h2>
+
+<ul>
+	<li><span>模板方法模式</span>
+		<p>
+			类似于之前播控重构里的组件基类，作用是提供给别的组件作为模板一样继承。已达到共用方法的目的
+		</p>
+	</li>
+
+	<li><span>观察者模式</span>
+		<p>
+			观察者模式共两个角色：观察者和订阅者，观察者提供三个方法，注册订阅者，删除订阅者，发布消息；订阅者通过传入身份信息和订阅回调函数，在观察者中保存，在用户触发某部分修改时，观察者可触发发布消息方法，然后观察者通过内部方法直接调用订阅者的相应的回调函数；订阅者还可以删除；（注：删除订阅者时候，通过比对方法，若方法存在则删除，此处如果传入匿名函数，则obArr[name][i] === fn 永远为false，但若传入一个声明函数名，则为true）;
+		</p>
+	</li>
+
+	<li><span>状态模式</span>
+		<p>
+			和工厂方法模式差不多意思，将状态作为对象的方法，通过传入方法名，直接调用，而不需要分支判断
+		</p>
+	</li>
+
+	<li><span>策略模式</span>
+		<p>
+			策略模式，和状态模式，工厂方法模式一个意思，只不过状态模式可能用于一个逻辑下的n中状态，简化判断分支，而策略模式是独立存在的功能方法，如Animation.css的各种动画属性，对外就是策略，内部则是完成独立的功能，跟对象本身可能关系不大，只提供解决问题的一些策略。
+		</p>
+	</li>
+
+	<li><span>职责链模式</span>
+		<p>
+			将一个复杂完整的需求拆分成不同职责小需求，如ajax请求、处理数据，渲染数据。。。每个部分固定传入的参数或调用的方法，输入固定的数据或调用固定的下一职责链的方法；优点：方便单元测试
+		</p>
+	</li>
+
+	<li><span>命令模式</span>
+		<p>
+			通过某种参数格式，调用对象里的方法同时传递数据，如：对象A中有一系列方法功能，我想完成它可能要先调用A.a().b().c()....如果A提供一个excute方法，约定好给这个方法传入一些指令及数据，然后按照规则解析这个指令，完成对一系列方法的调用
+		</p>
+	</li>
+
+	<li><span>访问者模式</span>
+		<p>
+			将于对象本身关联不大的方法提取，在访问者中封装好，在对象必要调用的时候，传入对象（call,apply）改变访问者中的this指向，使得对象执行访问者中的具体方法；
+		</p>
+	</li>
+
+	<li><span>中介者模式</span>
+		<p>
+			和观察者模式差不多，中介者只负责单向发布
+		</p>
+	</li>
+
+	<li><span>备忘录模式</span>
+		<p>
+			简单的说，就是缓存一些不需要实时更新的信息数据，避免二次请求，比如缓存每次去服务器请求的数据（如列表数据）
+		</p>
+	</li>
+
+
+	<li><span>迭代器模式</span>
+		<p>
+			类似于数组的each，或for循环，用户遍历处理对象的元素，有时用于简化对于一类循环的的重复性操作
+		</p>
+	</li>
+
+	<li><span>解释器模式</span>
+		<p>
+			按照某种规则，完成一个固定的逻辑。类似于一种映射，比如根据传入的数据，经过解释器映射出一个有规律的值。
+		</p>
+	</li>
+</ul>
+
+</body>
+
+<script type="text/javascript">
+	
+//观察者模式：
+var Observer = (function(){
+	var obArr = {};//订阅者们
+	return {
+		regist:function(name,fn){//新增观察者
+			if(obArr[name]){
+				obArr.push(fn);
+			}else{
+				obArr[name] = [fn];//订阅者方法是个队列
+			}
+		},
+		remove:function(name,fn){//删除观察者
+			if(obArr[name] instanceof Array){
+				for(var i=0,len=obArr[name].length;i<len;i++){
+					obArr[name][i] === fn && obArr[name].splice(i,1);//如果存在要删除的方法，则删除
+				}
+			}
+		},
+		notify:function(name,dt){//通知订阅者
+			if(!obArr[name])return;
+			var evt = {type:name,args : dt || {}};
+			
+
+			for(var i=0,len=obArr[name].length;i<len;i++){
+				obArr[name][i].call(this,evt);
+			}
+		}
+	}
+})();
+
+
+Observer.regist('test',function(e){//此处若传入匿名函数
+	console.log(e.type,e.args)
+})
+
+Observer.notify('test','zxj');
+
+Observer.remove('test',function(e){//则删除的时候，永远删除不成功，若传入为声明函数名，则成功
+	console.log(e.type,e.args)
+})
+
+Observer.notify('test','Zhang')
+
+
+function A(e){
+	console.log(e.type,e.args)
+}
+
+//状态模式：
+var B = (function(){
+	var S = {
+		B1:function(){console.log('B1')},
+		B2:function(){}
+	};
+	var show = function(r){
+		return S[r] && S[r]();
+	}
+	return {show:show};
+})();
+B.show('B1');
+
+//访问者模式：
+function Visitor(){
+	this.visit = function(curObj){
+		curObj.doSome();
+	}
+}
+
+function ctEle(){
+	this.doSome = function(){
+		console.log('ctEle');
+	};
+	this.accept = function(v){
+		v.visit(this);
+	}
+}
+
+var ele = new ctEle();
+var v = new Visitor();
+ele.accept(v);
+
+
+
+</script>
+
+</html>

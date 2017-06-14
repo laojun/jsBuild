@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>34.等待者模式</title>
+</head>
+<body>
+
+<p>
+	等待者模式：给每个异步的开始时注入一个监听器，在事件处理结果时改变监听器的状态，每次改变监听器状态的同时，遍历所有异步监听事件的状态，若都处理完成，则统一处理所有异步执行结果。
+	</br>
+	问题：如果异步结果的返回相互依赖怎么办？
+</p>
+
+</body>
+<script type="text/javascript">
+var Waiter = function(){
+	var dfd = [],//监听者数组
+		doneArr = [],//成功回调方法数组
+		failArr = [],//失败回调方法数组
+		slice = Array.prototype.slice,
+		that = this;
+	var Primise = function(){
+		this.resolved = false;
+		this.rejected = false;
+	}
+	Primise.prototype = {
+		resolve:function(){
+			this.resolved = true;
+			var i = dfd.length;
+			if(!i)return;//没有监听者，返回
+			for(--i;i>=0;i--){
+				if(dfd[i] && dfd[i].rejected || !dfd[i].resolved){//存在未完成的执行,或失败的执行
+					return;
+				}
+				dfd.splice(i,1);//已经成功的监听者，移除，不再监听
+			}
+			_exex(doneArr);
+		},
+		reject:function(){
+			this.rejected = true;//存在失败
+			dfd = [];//清空监听数组
+			_exex(failArr);
+		}
+	}
+
+	this.Deferred = function(){
+		return new Primise();
+	}
+	function _exex(arr){
+		for(var i=0,len=arr.length;i<len;i++){
+			arr[i] && arr[i]();
+		}
+	}
+
+	this.when = function(){
+		dfd = slice.call(arguments);
+		var i= dfd.length;
+		if(!i)return;
+		for(--i;i>=0;i--){
+			if(!dfd[i] || dfd[i].resolved || dfd[i].rejected ||  !dfd[i] instanceof Primise){
+				//凡是存在监听对象被处理了，或不是监听对象，删除
+				dfd.splice(i,1);
+			}
+		}
+		return this;
+	};
+
+	this.done = function(){
+		doneArr = doneArr.concat(slice.call(arguments));
+		return this;
+	};
+
+	this.fail = function(){
+		failArr = failArr.concat(slice.call(arguments));
+		return this;
+	};
+
+}
+
+var waiter = new Waiter();
+
+var first = (function(){
+	var dtd = waiter.Deferred();
+	setTimeout(function(){
+		console.log("first end");
+		dtd.resolve();
+	},2000)
+	return dtd;
+})();
+
+var second = (function(){
+	var dtd = waiter.Deferred();
+	setTimeout(function(){
+		console.log("second end");
+		dtd.resolve()
+	},3000)
+	return dtd;
+})();
+
+
+
+waiter.when(first,second).done(function(){
+	console.log("first suc")
+},function(){
+	console.log("second suc")
+}).fail(function(){
+	console.log("first fail")
+},function(){
+	console.log("second fail")
+})
+
+
+
+
+
+</script>
+</html>

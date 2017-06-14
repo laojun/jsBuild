@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>31.简单模板模式</title>
+</head>
+<body>
+<p>
+	将dom的结构数据化，再通过格式化字符串方式，用数据映射出html代码。
+	减少dom的操作，以提高性能。
+</p>
+
+<div id="container"></div>
+
+</body>
+<script type="text/javascript">
+
+var A = {};
+
+A.root = document.getElementById('container');
+
+A.strategy = {
+	listPart:function(data){
+		var s = document.createElement('div'),
+			ul = '',
+			ldata = data.data.li,
+			tpl = A.view(['h2','p','ul'])
+			liTpl = A.formateString(A.view('li'),{li:A.view(['strong','span'])});
+
+			// [
+			// 	'<li>',
+			// 		'<strong>{#strong#}</strong>',
+			// 		'<span>{#span#}</span>',
+			// 	'</li>'	
+			// ].join('');
+
+			data.id && (s.id = data.id);
+
+			for(var i=0,len=ldata.length;i<len;i++){
+				if(ldata[i].span){
+					ul += A.formateString(liTpl,ldata[i])
+				}
+			}
+			data.data.ul = ul;
+			var res = A.formateString(tpl,data.data);
+			s.innerHTML = res;
+			A.root.appendChild(s);
+			return res;
+
+	},
+	codePart:function(){},
+	onlyTtite:function(){},
+	guide:function(){}
+}
+
+A.init = function(data){
+	this.strategy[data.type] && this.strategy[data.type](data);
+}
+
+A.formateString = function(str,data){
+	var res = str.replace(/\{#(\w+)#\}/g, function(match,key){
+		return typeof data[key]===undefined ? '' : data[key];
+	});
+	return res;
+}
+
+A.view = function(name){
+	var v = {
+		code:'<pre><code>{#code#}</code></pre>',
+		img:'<img src="{#src#}" alt="{#alt#}" title="{#title#}" />',
+		part:'<div id="{#id#}" class="{#class#}">{#part#}</div>',
+		theme:[
+			'<div>',
+				'<h1>{#title#}</h1>',
+				'{#content#}',
+				'</div>'
+		].join('')
+	};
+
+	if(Object.prototype.toString.call(name) === '[object Array]'){
+		var tpl = '';
+		for(var i=0,len=name.length;i<len;i++){
+			tpl += arguments.callee(name[i]);
+		}
+		return tpl;
+	}else {
+		return v[name] ? v[name] : ('<'+name+'>{#'+name+'#}</'+name+'>');
+	}
+}
+ 
+
+var dt = {
+	type:'listPart',
+	id:'test',
+	data:{
+		h2:'testH2',
+		p:'testP',
+
+		li:[
+			{span:'_1',strong:'s_1'},
+			{span:'_2',strong:'s_2'},
+			{span:'_3',strong:'s_3'}
+		]
+	}
+}
+
+
+A.init(dt);
+
+
+</script>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>36.异步模块模式</title>
+</head>
+<body>
+
+<p>
+异步模块模式：当开启一个方法A，依赖于未加载的模块，依次加载模块（loadModule）并记录异步加载模块的数量（loadCount），load的过程中会缓存该模块，然后动态加载js，并设置回调函数来改变loadCount，当所有模块都加载完，会通过校正模块setModule将所得到的模块对象传入方法A内并执行。模块加载的过程也会寻找该模块本身的依赖，若依赖模块存在，则添加回调函数，若不存在，则按原路加载模块。
+</p>
+
+<button id="demo">button</button>
+</body>
+<script type="text/javascript">
+
+//~的作用，为避免压缩文件的报错
+~(function(F){
+	var moduleCache = {};//模块缓存
+	
+	var setModule = function(moduleName,params,callback){
+			var _module,fn;
+			if(moduleCache[moduleName]){
+				_module = moduleCache[moduleName];
+				_module.status = 'loaded';
+				_module.exports = callback ? callback.apply(_module,params) : null;
+				while(fn=_module.onload.shift()){
+					fn(_module.exports);
+				}
+			}else{
+				callback && callback.apply(null,params)
+			}
+
+		},
+		loadModule = function(moduleName,callback){
+			var _module;
+			if(moduleCache[moduleName]){
+				_module = moduleCache[moduleName];
+				if(_module.status=='loaded'){
+					setTimeout(callback(_module.exports),0);
+				}else{
+					_module.onload.push(callback);
+				}
+			}else{
+				moduleCache[moduleName] = {
+					moduleName : moduleName,
+					status : 'loading',
+					exports : null,
+					onload: [callback]
+				};
+				loadScript(getUrl(moduleName));
+			}
+		},
+		getUrl = function(moduleName){
+			return String(moduleName).replace(/\.js$/g,'') + '.js';
+		},
+		loadScript = function(src){
+			var _script = document.createElement('script');
+			_script.type = 'text/JavaScript';
+			_script.charset = 'UTF-8';
+			_script.async = true;
+			_script.src = src;
+			document.getElementsByTagName('head')[0].appendChild(_script);
+		};
+
+	F.module = function(url,modDeps,modCallback){
+		var args = [].slice.call(arguments),
+			callback = args.pop(),
+			deps = (args.length && args[args.length-1] instanceof Array) ? args.pop() : [],
+			url = args.length ? args.pop() : null,
+			params = [],
+			depsCount = 0,
+			i = 0,
+			len;
+
+		if(len=deps.length){
+			while(i<len){
+				console.log(len,args);
+				(function(i){
+					depsCount++;
+					console.log(len,args);
+					loadModule(deps[i],function(mod){
+						params[i] = mod;
+						depsCount -- ;
+						if(depsCount===0){
+							setModule(url,params,callback);
+						}
+					});
+				})(i);
+				i++
+			}
+		}else{
+			setModule(url,[],callback);
+		}
+	}
+
+
+
+})((function(){
+	return window.F = {}
+})());
+
+
+
+F.module(['event'],function(evt){
+	evt.on('demo','click',function(){
+		console.log('demo')
+	})
+})
+
+
+
+// F.module(['dom'],function(dom){
+// 	console.log(dom.g('demo'));
+// 	return;
+// 	evt.on('demo','click',function(){
+// 		dom.html('demo','suc');
+// 	})
+// })
+
+</script>
+</html>

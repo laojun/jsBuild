@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>3.结构型设计模式-集合</title>
+</head>
+<body>
+<h2>
+	结构型设计关注如何将类或对象组合成更大更复杂的结构，以简化设计。
+</h2>
+
+<ul>
+	<li>
+		<span>
+			外观模式
+		</span>
+		<p>
+			给用户提供统一的接口调用，用户看到的只有一个；如浏览器的监听，attachEvent和addEventListener，封装成一个addEvent，对用户来说，只需要关心外面包装好的，不用关心里面；
+		</p>
+	</li>
+	
+	<li>
+		<span>
+			适配器模式：
+		</span>
+		<p>
+			适配器模式通常用来处理两个对象之间的接口不兼容的问题，比如我用wasuTv3框架替代wasuTv3；过度阶段，引入两个框架，但在tv2中对部分方法将tv3的实现直接调用
+		</p>
+	</li>
+	<li><span>代理模式</span>
+		<p>
+			略？？	
+		</p>
+	</li>
+	<li><span>装饰着模式</span>
+		<p>
+			不改变对象的基础上，通过拓展（给对象添加方法或属性），使对象满足更多需求；如A.a这个是基础方法，在子类调用了A.a后再执行一个其他的拓展方法，这个方法则为装饰者，满足拓展又不影响原来
+		</p>
+	</li>
+	<li><span>桥接模式</span>
+		<p>
+			桥接模式：
+		</p>
+	</li>
+	<li><span>组合模式</span>
+		<p>
+			将一个大类分成好多小块，小块之间组合，层次可以很多，最终成形大类；react思想
+		</p>
+	</li>
+	<li><span>享元模式</span>
+		<p>
+			将一些细微颗粒度的方法独立，提供给所有功能一致的对象使用；如游戏中所有人物的移动；分页操作的渲染页面；都可根据外部传入的一些参数，完成固定模式的计算；实现对象的功能；
+		</p>
+	</li>
+
+</ul>
+
+
+
+</body>
+<script type="text/javascript">
+
+//装饰者模式
+
+var A = function (){
+	this.do=function(){
+		console.log(1)
+	}
+}
+
+var a = new A();
+var decorator = function(obj,fnType,extFn){
+	if(typeof obj[fnType] == 'function'){
+		var fn = obj[fnType];
+		obj[fnType] = function(){
+			fn();
+			extFn();
+
+		}
+	}else{
+		obj[fnType] = extFn;
+	}
+}
+decorator(a,'do',function(){//对a对象的do方法进行拓展，结果既执行了原有方法，也执行了后续拓展的方法
+	//拓展
+	console.log(2)
+});
+a.do();
+
+
+
+
+</script>
+
+</html>

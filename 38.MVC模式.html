@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>38.MVC</title>
+</head>
+<body>
+
+<p>
+	MVC：mvc模式将页面分成三个清晰的层次：数据（M）、视图（V）、控制器（C）；目的为数据层只负责数据的存取，视图层根据数据生成对应视图，控制层则获取视图层和数据层，根据需求添加各种逻辑事件。从而解决页面各个层次之间的耦合，专注每个层次的独立功能即可。也可达到视图和数据的复用共享。
+
+</p>
+
+</body>
+
+<script type="text/javascript">
+
+(function(){
+	var MVC = {};
+
+	MVC.model = (function(){
+		var M = {};
+		M.data = {
+			AData:{}
+			BData:{}
+
+		};//页面数据
+		M.conf = {};//配置数据
+		return {
+			getData:function(m){
+				return M.data[m];
+			},
+			getConf:function(c){
+				return M.conf[c];
+			},
+			setData:function(m,v){
+				M.data[m] = v;
+				return this;
+			},
+			setConf:function(c,v){
+				M.conf[c] = v;
+				return this;
+			}
+		}
+	})();
+
+	MVC.view = (function(){
+		var M = MVC.model;//获取数据层引用方法
+		var V = {
+			createViewA:function(){
+				var html = '';
+				var data = M.getData('AData');
+				//视图模板，通过简单模板模式将data转换为html
+				//...
+
+				//dom.html(html);//插入视图到页面
+			},
+			createViewB:function(){
+				var html = ''
+				var data = M.getData('BData');
+				//同上
+			}
+
+		};
+		return function(v){
+			V[v]();
+		}
+
+	})();
+
+	MVC.ctrl = (function(){
+		var M = MVC.model;
+		var V = MVC.view;
+		var C = {
+			initCtrlA:function(){//初始化A的控制器
+				V('createViewA');//生成视图A
+				//为各种视图元素添加事件
+
+			},
+			initCtrlB:function(){//初始化B控制器
+				V('createViewB');//生成视图B
+				//为各种视图元素添加事件
+			}
+
+		};
+		C.initCtrlA();
+		C.initCtrlB();
+	})();
+
+})()
+	
+
+</script>
+
+</html>

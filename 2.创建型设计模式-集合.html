@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>2.创建型设计模式</title>
+</head>
+<body>
+<p>
+	创建型设计模式：处理对象创建的设计模式，通过一些方法控制对象创建带来的问题
+</p>
+<ul>
+	<li>
+		<span>简单工厂模式</span>
+		<p>
+			将各种小类创建整合到大类中，如篮球、足球，可以一个大工厂球类来整合，用户只要知道传什么参数到球类工厂，能得到什么就行。球类工厂里可以创建其他对象的公有属性方法，也可以case某个代表类型的参数拓展具体的球类对象。缺点：每次新增小类的生活，需要修改大类的case，
+		</p>
+	</li>
+	<li>
+		<span>工厂方法模式</span>
+		<p>
+			将子类的创建过程放入大类的方法中，然后用户直接传入参数获取大类的某个属性方法，这个方法就是创建该子类的过程；如 Factory[type](content);//type是Factory的某个方法，用来创建子类，content为传入子类的参数；
+		</p>
+	</li>
+	<li>
+		<span>抽象工厂模式</span>
+		<p>
+			抽象工厂只创建抽象类，抽象类的定义为：只显性声明方法，不负责具体方法的实现，抽象类中所有方法里面都抛异常，若子类继承了抽象类，但未重写某方法的实现，则可以获得相应提醒。抽象类在js中应用看场景而定，不像java那么广泛。
+		</p>
+	</li>
+	<li>
+		<span>建造者模式</span>
+		<p>
+			建造者模式是指将一个大类里面的某些功能封装成小类，然后组装成一个大类，如：Human为一个大类，Hand和Foot是小类，则Human中通过某个属性去实例化Hand和Foot，以及其他部分，共同构建出一个类；此方式对于颗粒度太小或小类复用率不高的情况下，不建议使用。会增加结构的复杂程度。
+		</p>
+	</li>
+	<li>
+		<span>原型模式</span>
+		<p>
+			就是将可共用的属性方法提出来放在类的原型中，然后通过寄生组合继承，实现子类；减少对象在实例化的消耗；
+		</p>
+	</li>
+	<li>
+		<span>单例模式</span>
+		<p>
+			就是用一个命名空间收拢其他的属性方法。避免函数重名，并且只实例化一次；通常用闭包管理私有变量；如var A = {A1:...;A2:...}
+		</p>
+	</li>
+</ul>
+
+
+</body>
+
+<script type="text/javascript">
+
+//简单工厂:
+var Balls = function(b){
+	switch(b){
+		case '1':
+			return new B1();
+		case '2':
+			return new B2();
+	}
+}
+
+var B1 =function(){}
+var B2 =function(){}
+
+//工厂模式：
+function createBook(name,time,type){
+	
+	//不同type公用的逻辑
+	var o = new Object();
+	o.name = name;
+	o.time = time;
+	o.getname = function(){}
+
+	//根据type拓展不同对象
+	switch(type){
+		case 'type1':
+			//...拓展逻辑
+			return o;
+		case 'type2':
+			//...拓展逻辑
+			return o;
+	}
+	return o;
+}
+
+//工厂方法
+var F = function(type,ct){
+	if(this instanceof F){
+		var s = new this[type](ct);
+		return s;
+	}else{
+		return new F(type,ct);
+	}
+}
+
+F.prototype = {
+	F1:function(ct){
+
+	}
+}
+
+//抽象工厂模式
+
+
+
+</script>
+
+</html>

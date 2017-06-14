@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>40.MVVM</title>
+</head>
+
+<style type="text/css">
+.first{background:#aaa; height: 30px;margin-top: 30px;}	
+.second{background:#aaa; height: 30px; margin-top: 30px;}	
+.third{background:#aaa; height: 30px;margin-top: 30px;}	
+
+.first b{ float: right; }
+.first div{background: #eee; height: 30px; position: absolute;}
+.first span{ display: block; background-color: #abcdec; width: 20px; height: 30px;  z-index: 3; position: absolute;}
+
+</style>
+<body>
+
+<p>
+	
+</p>
+
+
+<br><br><br>
+
+<div class="first" data-bind="type:'slider',data:demo1"></div>
+<div class="second" data-bind="type:'slider',data:demo2"></div>
+<div class="third" data-bind="type:'progressbar',data:demo3"></div>
+
+</body>
+
+<script type="text/javascript">
+
+~(function(){
+	var window = this || (0,eval)('this');//获取全局对象，不是浏览器环境的可用后面方式获取全局对象
+	var FONTSIZE = function(){
+		return parseInt(document.body.currentStyle ? document.body.currentStyle['fontSize'] : getComputedStyle(document.body,false)['fontSize']);//获取浏览器的字体大小
+	}();
+
+	
+	var VM = function(){
+
+		
+
+
+		var Method = {
+			progressbar:function(dom,data){
+				var progress = document.createElement('div');
+					params = data.data;
+				progress.style.width = (params.postion || 100)+'%';
+				dom.className += ' ui-progressbar';
+				dom.appendChild(progress);
+			},
+			slider:function(dom,data){
+				var bar = document.createElement('span'),
+					progress = document.createElement('div'),
+					totleText = null,
+					progressText = null,
+					param = data.data,
+					width = dom.clientWidth,
+					left = dom.offsetLeft,
+					realWidth = (param.postion || 100) * width /100;
+
+				dom.innerHTML = '';
+				
+				if(param.totle){
+					text = document.createElement('b');
+					progressText = document.createElement('em');
+					text.innerHTML = param.totle;
+					dom.appendChild(text);
+					dom.appendChild(progressText);
+				}
+
+				setStyle(realWidth);
+				dom.className += ' ui-slider';
+				dom.appendChild(progress);
+				dom.appendChild(bar);
+
+				function setStyle(w){
+					progress.style.width = w + "px";
+					bar.style.left = w - FONTSIZE/2 + "px";
+					if(progressText){
+						progressText.style.left = w - FONTSIZE /2 *2.4 + "px";
+						progressText.innerHTML = parseFloat(w/width*100).toFixed(2) + '%';
+					}
+				}
+
+				bar.onmousedown = function(){
+					document.onmousemove = function(evt){
+						var e = evt || window.event;
+						var w = e.clientX - left;
+						setStyle(w<width ? (w>0?w:0) : width)
+					}
+
+					document.onselectstart = function(){
+						return false;
+					}
+
+					document.onmouseup = function(){
+						document.onmousemove = null;
+						document.onselectstart = null;
+					}
+				}
+			},
+		}
+				function getBindData(dom){
+			var data = dom.getAttribute('data-bind');
+			return !!data && (new Function("return ({"+data+"})"))();
+		}
+
+		return function(){
+			var doms = document.body.getElementsByTagName('*'),
+				ctx = null;
+
+			for(var i=0,len=doms.length;i<len;i++){
+				ctx = getBindData(doms[i]);
+				ctx.type && Method[ctx.type] && Method[ctx.type](doms[i],ctx);
+			}
+		}
+
+	}();
+	window.VM = VM;
+})();
+
+
+var demo1 = {
+	postion:60,
+	totle:200
+	},
+	demo2 = {
+		postion:20
+	},
+	demo3 = {
+		postion:50
+	};
+
+
+window.onload = function(){
+	VM();
+}
+
+</script>
+
+</html>

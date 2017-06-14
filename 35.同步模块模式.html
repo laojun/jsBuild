@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>35.同步模块模式</title>
+</head>
+<body>
+
+<p>
+	同步模块模式：对模块进行分而治之的做法；核心分为模块定义，模块调用。
+	</br>
+	实际的过程为，创建一个命名空间，在模块定义方法里按照传入的参数定义模块链，在模块调用方法里，按照参数搜索出模块并返回到回调函数中使用，已达到对模块
+</p>
+
+</body>
+<script type="text/javascript">
+
+var F = F || {};
+
+//F.b = {name:'zxj',c:'zxj'};
+
+F.define = function(str,fn){
+	var parts = str.split('.'),
+		old = parent = this,
+		i = len = 0;
+
+	if(parts[0]==='F'){
+		parts = parts.slice(1);
+	}
+
+	if(parts[0]==='define' || parts[0]=='module'){
+		return;
+	}
+	for(len=parts.length;i<len;i++){
+		if(typeof parent[parts[i]] == 'undefined'){
+			parent[parts[i]] = {};
+		}
+		old = parent;
+		parent = parent[parts[i]];
+	}
+	if(fn){
+		old[parts[--i]] = fn();
+	}
+
+	return this;
+}
+
+//模块调用方法
+	F.module = function(){
+		var args = [].slice.call(arguments),
+			fn = args.pop(),
+			parts = args[0] && args[0] instanceof Array ? args[0] : args,
+			modules = [],
+			modIDs = '',
+			i = 0,
+			ilen = parts.length,
+			parent, j, jlen;
+
+		while(i<ilen){
+			if(typeof parts[i] === 'string'){
+				parent = this;
+				modIDs = parts[i].replace(/^F\./,'').split('.');
+				for(j=0,jlen=modIDs.length; j<jlen; j++){
+					parent = parent[modIDs[j]] || false;
+				}
+				modules.push(parent);
+			}else{
+				modules.push(parts[i]);
+			}
+			i++;
+		}
+		fn.apply(null,modules);
+	};
+
+
+
+F.define('string',function(){
+	return {
+		trim:function(str){
+			return str.replace(/^\s+|\s+$/g,'');
+		}
+	}
+})
+
+//F.string.trim("   test   ");
+
+F.define("F.b.c.d",function(){
+	return {
+		add:function(n1,n2){
+			return n1+n2;
+		}
+	}
+});
+
+F.module('b.c.d',function(d){
+	console.log(d);
+})
+
+F.module('b','c.d',function(b,d){
+	console.log(b)
+	console.log(d);
+})
+
+//通过闭包实现
+var M = (function(){
+	var F = {};
+
+	var getF = function(){
+		return F;
+	};
+
+	//模块定义方法
+	F.define = function(str,fn){
+		var parts = str.split('.'),
+			old = parent = F,
+			i = len = 0;
+
+		if(parts[0]==='F'){
+			parts = parts.slice(1);
+		}
+
+		if(parts[0]==='define' || parts[0]==='module'){
+			return;
+		}
+		for(len=parts.length;i<len;i++){
+			if(typeof parent[parts[i]]==='undefined'){
+				parent[parts[i]] = {};
+			}
+			old = parent;
+			parent = parent[parts[i]];
+		}
+		if(fn){
+			old[parts[--i]] = fn();
+		}
+		return F;
+	};
+
+	//模块调用方法
+	F.module = function(){
+		var args = [].slice.call(arguments),
+			fn = args.pop(),
+			parts = args[0] && args[0] instanceof Array ? args[0] : args,
+			modules = [],
+			modIDs = '',
+			i = 0,
+			ilen = parts.length,
+			parent, j, jlen;
+
+		while(i<ilen){
+			if(typeof parts[i] === 'string'){
+				parent = this;
+				modIDs = parts[i].replace(/^F\./,'').split('.');
+				for(j=0,jlen=modIDs.length; j<jlen; j++){
+					parent = parent[modIDs[j]] || false;
+				}
+				modules.push(parent);
+			}else{
+				modules.push(parts[i]);
+			}
+			i++;
+		}
+		fn.apply(null,modules);
+	};
+
+
+	return {getF:getF};
+})();
+
+M.getF().define('a.b.c.d',function(){
+	return {
+		add:function(n1,n2){
+			return n1+n2;
+		}
+	}
+})
+
+M.getF().a.b.c.d.add(1,2);
+
+M.getF().module('a','a.b.c.d',function(a,d){
+	console.log(a)
+	console.log(d)
+	console.log(d.add(1,1))
+})
+
+
+
+
+</script>
+</html>

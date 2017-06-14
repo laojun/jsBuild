@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>1.js的面向对象</title>
+</head>
+<body>
+
+
+<p>
+	1、对象收编：用变量的属性收拢方法，以免过多方法独立在页面上增加被重写风险<br>
+	2、类的概念：用this关键字给每个new的变量增加独立的方法属性；但此过程有性能消耗，所以如果有公用的方法，可以写在类的prototype上，给所有实例的对象公用。<br>
+	3、使用return this，让函数级联调用：如a.b().c();<br>
+	4、对象的安全模式：为避免忘记加new关键字，在类函数中判断this，若this指向window，则说明未添加new关键字，此时可以return new A(...);<br>
+	5、类式继承：将子类的原型赋值为父类的实例对象；缺点：对父原型的操作影响到所有子对象，无法向父类传参<br>
+	6、构造函数继承：利用call函数，给子类对象附上父类的属性和方法，但是附不上父类的原型（prototype），创建出来的父类方法属性对子类都独立<br>
+	7、组合继承：结合5、6；缺点：每次创建对象的时候，要执行两次父类的对象（赋值原型时：将父的方法属性和父原型的方法属性添加到子；call时候：将父的方法属性添加到子；和赋值原型时重复了部分。导致前面那次只有后半部分有效，只有父的prototype是起了作用，父内部的属性方法都因call，导致原型上的无用，浪费）<br>
+	8、原型式继承：没啥卵用，就是类式继承的封装<br>
+	9、寄生式继承：貌似也没啥卵用，就是原型式继承的第二次封装，然后拓展；8和9都是为10做铺垫的<br>
+	10、寄生组合：寄生式继承+构造函数继承；为解决组合继承中的缺点，call只添加父的方法属性到子，寄生只添加父的原型到子的原型；但不能直接把父的原型赋值给子的原型，因为这样改变了子原型中的constructor，所以需要用寄生，在里面重写子的原型的constructor;也解决了在继承原型时没执行父的构造函数，节省性能。缺点：这样继承之后，如果想给子原型添加方法属性，只能通过prototype.xxx来添加，如果用子.prototype = xxx ，则会删掉子对父原型的继承。<br>
+	11、多继承：利用extend作用，遍历父对象（多个）属性方法给子；缺点：很多，父会替换掉子同名属性方法；无法实现子类公用属性方法（如果是深度复制，就都不能公用，如果潜复制，则引用类型可能公共），因此这种做法只在特定需求情况下。<br>
+	12、多态：根据传入的arguments的长度实现不同逻辑；（注：arguments不是数组，typeof arguments='object'，但是有length属性;所以arguments不能使用数组方法，如slice，一定要转换一下才可以：[].slice.call(arguments）,和这个类似的有获取元素子节点等等）<br>
+	
+
+</p>
+
+</body>
+
+<script type="text/javascript">
+
+Function.prototype.addM = function(n,fn){
+	this.prototype[n] = fn;
+	return this;
+}
+
+var M = function(){};
+
+M.addM('do',function(){
+	console.log('do');
+})
+
+//M.do();//报错，此时M为function，do的方法添加到了M的原型上，故M.prototype.do存在，
+
+var m = new M();
+m.do();//存在，此时m为一个M的实例对象object，故可以访问到M的原型
+
+
+//对象的安全模式
+function A(a){
+	if(!(this instanceof A))return new A(a);//安全检查
+	this.a = a;
+	this.b = function(){}
+}
+
+var a = new A('1');
+
+var b = A('2');//未添加new
+
+//类式继承
+function Super(){
+	this.a = 1;
+}
+
+function Sub(){
+	this.b = 2;
+}
+
+Sub.prototype = new Super();
+
+console.log(Sub instanceof Super);//false,
+console.log(Sub.prototype instanceof Super);//true
+
+//构造函数继承：
+function SuperA(id){
+	this.a = 1;
+	this.id = id;
+}
+function SubA(id){
+	SuperA.call(this,id);
+	this.b = 2;
+}
+
+//组合继承：略
+
+//原型式继承：
+
+function guoduFun(o){//过渡函数
+	function F(){}
+	F.prototype = o;
+	return new F();
+}
+
+var book = {
+	name:'zxj',
+	list:[1,2,3]
+}
+var b1 = guoduFun(book);
+b1.name = 'Zxj';
+b1.list.push(4)
+
+var b2 = guoduFun(book);
+b2.name = "Zhang";
+b2.list.push(5);//book.list = 1,2,3,4,5
+
+//寄生式继承：
+var book2 = {
+	name:'zxj',
+	list:[1,2,3]
+}
+
+function createBook(obj){
+	var o = new guoduFun(obj);
+	o.getName = function(){
+		console.log(name)
+	}
+	return o;
+}
+
+var b11 = createBook(book2);
+b11.name = "Zhang";
+b11.list.push(4);
+
+var b22 = createBook(book2)
+b22.name = 'zhangxj';
+b22.list.push(4);
+
+
+//寄生组合
+function inheritPrototype(subO,superO){
+	//复制一份父类的原型副本保存在变量中
+	var p = guoduFun(superO.prototype);
+	//修正因重写子类原型导致子类的constructor属性被修改
+	p.constructor = subClass;
+
+	//设置子类原型：
+	subO.prototype = p;//因为这句会改变prototype里的constructor，所以才会有上面那句代码
+}
+
+
+//多继承：extend
+var extend = function(target,src){//遍历源对象中的属性赋值到目标属性，
+	//多继承，就是传入多个src，遍历每个源对象属性到目标对象
+	for(var p in src){
+		target[p] = src[p];//潜复制，对于引用类型，双方持有相同引用指向同一个内存
+	}
+	return target;
+}
+
+
+
+
+</script>
+
+</html>

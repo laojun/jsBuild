@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>5.技巧型设计模式-集合</title>
+</head>
+<body>
+<h2>技巧型设计：通过一些特定的技巧来解决组件的某些问题，一般通过经验总结得到</h2>
+
+<ul>
+	<li><span>链模式</span>
+		<p>
+			就是在方法中返回对象本身，实现链式调用。例子讲的好复杂。。。为毛？！！！
+		</p>
+	</li>
+	<li><span>委托模式</span>
+		<p>
+			事件代理，将子元素的事件绑定去掉，通过父元素绑定，然后判断e.target的对象定位具体被触发的子元素
+		</p>
+	</li>
+	<li><span>数据访问对象模式</span>
+		<p>
+			创建DAO，用来封装对数据（localStrorage）的操作，提供方便安全的数据增删改查。
+		</p>
+	</li>
+	<li><span>节流模式</span>
+		<div id="clk">do</div>
+		<p>
+			将用户可能连续快速触发的事件，通过函数节流或防抖，将n毫秒内触发的事件，只执行一次，间隔了n毫秒之后的才开始执行，达到性能优化及避免不可预知的bug
+		</p>
+	</li>
+	<li><span>简单模板模式</span>
+		<p>
+			
+		</p>
+	</li>
+	<li><span></span>
+		<p>
+			
+		</p>
+	</li>
+	<li><span></span>
+		<p>
+			
+		</p>
+	</li>
+	<li><span></span>
+		<p>
+			
+		</p>
+	</li>
+</ul>
+
+
+</body>
+<script type="text/javascript">
+	
+//节流模式
+//节流器
+var throttle = function(){
+	var isClear = arguments[0],fn;
+	
+	if(typeof isClear==='boolean'){//第一个参数为是否清除
+		fn = arguments[1]
+		fn._timeoutId && clearTimeout(fn._timeoutId);
+	}else{
+		fn = arguments[0];
+		var param = arguments[1];
+		var p = {
+			context:null,
+			args : [],
+			time :300,
+		};
+		arguments.callee(true,fn);
+		fn._timeoutId = setTimeout(function(){
+			fn(p.context,p.args)
+		},p.time)
+	}
+}
+
+function doClk(){
+		console.log('doClk');
+}
+document.getElementById('clk').onclick = function(){
+	throttle(doClk)
+}
+
+
+</script>
+</html>

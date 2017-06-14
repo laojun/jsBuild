@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>39.MVP</title>
+</head>
+<body>
+
+<p>
+	MVP：衍生于MVC，分为数据（M），视图（V），管理层（P）；
+	<br>
+	主要思想为，原先在C中的生成视图的功能放到P中，V只根据传入的参数，生成视图模板（&lt;div&gt;{#data#}&lt;/div&gt;）；然后在P中根据M中获取的data和V中获取的tpl，生成最后的视图，并未视图添加交互逻辑和监听事件。其主要的不同为，独立了V层，让v变得更纯粹，也避免了因M的改变带来的V层的动荡。
+
+	<br>
+	<br>
+	模块化MVP：将MVP的实现封装，并提供构造函数，由于MVP中只有M和P是可改变的（V因只负责模板生成故不变），所以构造函数只提供setData和addP的接口方法，遇到模块化开发，就可调用改MVP模块，然后添加data和P，实现模块的MVP模式。
+
+</p>
+
+</body>
+
+<script type="text/javascript">
+~(function(window){
+	var MVP = {};
+
+	MVP.M = (function(){
+		var M = {};
+		M.data = {
+			AData:{},
+			BData:{},
+		};
+		M.conf = {
+			//...
+		}
+		return {
+			getData:function(d){
+				return M.data[d];
+			},
+			setData:function(d,v){
+				M.data[d] = v;
+				return this;
+			},
+			getConf:function(c){
+				return M.conf[c];
+			},
+			setConf:function(c,v){
+				M.conf[c] = v;
+				return this;
+			}
+		}
+	})();
+
+	MVP.V = (function(){
+		return function(str){
+			//V层不再使用M层，而是直接根据传入的参数，返回视图的html
+
+			return html;
+		}
+	})();
+
+	MVP.P = (function(){
+		var M = MVP.M;
+		var V = MVP.V;
+		var C = {
+			Ap:function(){
+				var data = M.getData('AData');
+				var tpl = V(/**字符串模板**/);//返回的视图模板
+				dom.hmtl(A.formaateString(tpl,data));//根据tpl和data生成最终实际的页面
+
+				//给视图添加监听事件，交互逻辑
+
+			},
+			Bp:function(){
+				//同上
+			}
+		};
+
+		return {
+			init:function(){
+				for(var i in C){
+					C[i] && C[i]();
+				}
+			}
+		}
+	})();
+
+	MVP.init = function(){
+		MVP.P.init()
+	}
+
+
+	MVP.init();
+
+
+	window.MVP = MVP
+})(window)
+
+
+//将MVP模块化
+F.module('MVP',function(){
+	var MVP = function(mdName,pst,data){
+
+
+
+		MVP.M.setData(mdName,data);
+
+		MVP.P.addP(mdName,pst);//添加管理器
+
+
+		return MVP;
+	};
+
+	//如上的实现
+		MVP.M = function(){
+			//...
+
+		}();
+
+		MVP.V = function(){
+			//...
+		}();
+
+		MVP.P = function(){
+			//...
+			var C = {
+
+			};
+			return {
+				init:function(){},
+				addP:function(m,p){
+					C[m] = p;
+				}
+			}
+		}();
+})
+
+
+//创建模块
+F.module(['MVP','A'],function(MVP,A){
+	MVP('c',function(M,V,name){
+		//....添加管理者代码
+	},
+	[/**data*/]//模块对应数据
+	)
+})
+
+
+
+
+</script>
+
+</html>
